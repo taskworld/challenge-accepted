@@ -348,13 +348,13 @@ import thunk from './thunk'
 export type WithLog = (message: string) => (baseThunk: Thunk) => Thunk
 
 export const withLogFactory
-  : (withTest: WithTest) => WithLog
-  = withTest => withTest(test => message => baseThunk => thunk(() => {
+  : (deps: { test: TestAPI }) => WithLog
+  = ({ test }) => message => baseThunk => thunk(() => {
     const promise = Promise.try(baseThunk)
     return test.case(message)(() => promise)().then(() => promise)
-  }))
+  })
 
-export default withLogFactory(withTest)
+export default withTest(test => withLogFactory({ test }))
 ```
 
 

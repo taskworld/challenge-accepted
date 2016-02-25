@@ -9,6 +9,9 @@
     "ms": "^0.7.1",
     "tap": "^5.7.0"
   },
+  "bin": {
+    "challenge-accepted": "./cli.js"
+  },
   "devDependencies": {
     "babel-cli": "^6.5.1",
     "babel-preset-es2015": "^6.5.0",
