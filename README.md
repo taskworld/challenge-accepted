@@ -260,18 +260,21 @@ Compared to `challenge-accepted`, you see that there are no chained method calls
 This framework uses [node-tap](http://www.node-tap.org/).
 
 ```js
-// withTest.js
-// @flow
-import tap from 'tap'
-import Promise from 'bluebird'
-import thunk from './thunk'
-
+// _/interfaces/TestAPI.js
 declare class TestAPI {
   pass (message: string): Thunk;
   fail (message: string, extra: any): Thunk;
   comment (message: string): Thunk;
   case (testName: string): (baseThunk: Thunk) => Thunk;
 }
+```
+
+```js
+// withTest.js
+// @flow
+import tap from 'tap'
+import Promise from 'bluebird'
+import thunk from './thunk'
 
 export type WithTest<T> = (f: (api: TestAPI) => T) => T
 
@@ -341,7 +344,6 @@ export default testDelay
 // @flow
 import Promise from 'bluebird'
 import withTest from './withTest'
-import type { WithTest } from './withTest'
 import script from './script'
 import thunk from './thunk'
 
