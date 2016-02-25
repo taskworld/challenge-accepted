@@ -24,7 +24,8 @@
     "build": "ruby build.rb && babel src -d lib",
     "clean": "rm -rf src lib",
     "dev": "concurrently 'onchange README.md -- ruby build.rb' 'babel src -d lib -w'",
-    "pretest": "npm run clean && npm run build",
+    "prebuild": "npm run clean",
+    "pretest": "npm run build",
     "test": "node lib/cli.js lib/test/index.js | tap-mocha-reporter spec",
     "tap": "babel-node src/cli.js src/test/index.js | tap-mocha-reporter spec"
   },

@@ -261,42 +261,41 @@ This framework uses [node-tap](http://www.node-tap.org/).
 
 ```js
 // _/interfaces/TestAPI.js
-declare class TestAPI {
-  pass (message: string): Thunk;
-  fail (message: string, extra: any): Thunk;
-  comment (message: string): Thunk;
-  case (testName: string): (baseThunk: Thunk) => Thunk;
-}
+type TestAPI = {
+  (testName: string): (baseThunk: Thunk) => Thunk;
+  pass: (message: string) => Thunk;
+  fail: (message: string, extra: any) => Thunk;
+  comment: (message: string) => Thunk;
+  test: (testName: string) => (baseThunk: Thunk, tapper: (value: any) => any) => Thunk;
+};
 ```
 
 ```js
 // withTest.js
 // @flow
-import tap from 'tap'
 import Promise from 'bluebird'
 import thunk from './thunk'
 
 export type WithTest<T> = (f: (api: TestAPI) => T) => T
 
 const withTestFactory
-  : (rootTest: TapTest) => WithTest
+  : (rootTest: TapTest | null) => WithTest
   = root => {
-    const stack: Array<TapTest> = [ tap ]
-    const withLatestTest = f => f(stack[stack.length - 1])
-    const api: TestAPI = {
-      pass: message => thunk(() => withLatestTest(test => test.pass(message))),
-      fail: (message, extra) => thunk(() => withLatestTest(test => test.pass(message, extra))),
-      comment: message => thunk(() => withLatestTest(test => test.pass(message))),
-      case: testName => baseThunk => thunk(() => withLatestTest(test =>
-        test.test(testName, child => {
-          stack.push(child)
-          return Promise.try(baseThunk).finally(() => stack.pop())
-        })
-      ))
-    }
+    const stack: Array<TapTest> = [ ]
+    const withLatestTest = f => f(stack.length === 0 ? root || require('tap') : stack[stack.length - 1])
+    const api = testName => (baseThunk, tapper) => thunk(() => withLatestTest(test =>
+      test.test(testName, child => {
+        stack.push(child)
+        return Promise.try(baseThunk).tap(tapper || (x => x)).finally(() => stack.pop())
+      })
+    ))
+    api.pass = message => thunk(() => withLatestTest(test => test.pass(message)))
+    api.fail = (message, extra) => thunk(() => withLatestTest(test => test.pass(message, extra)))
+    api.comment = message => thunk(() => withLatestTest(test => test.pass(message)))
+    api.test = api
     return f => f(api)
   }
-export default withTestFactory(tap)
+export default withTestFactory(null)
 ```
 
 ### Logging
@@ -353,7 +352,7 @@ export const withLogFactory
   : (deps: { test: TestAPI }) => WithLog
   = ({ test }) => message => baseThunk => thunk(() => {
     const promise = Promise.try(baseThunk)
-    return test.case(message)(() => promise)().then(() => promise)
+    return test(message)(() => promise)().then(() => promise)
   })
 
 export default withTest(test => withLogFactory({ test }))
@@ -447,7 +446,7 @@ for (const moduleName of Object.keys(modules)) {
   const testFunction = moduleExports && (moduleExports.default || moduleExports)
   if (!testFunction) continue
   tests.push(
-    withTest(test => test.case(moduleName)(
+    withTest(test => test(moduleName)(
       (/\.fail$/.test(moduleName) ? failingTest : passingTest)(testFunction)
     ))
   )
