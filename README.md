@@ -266,7 +266,8 @@ type TestAPI = {
   pass: (message: string) => Thunk;
   fail: (message: string, extra: any) => Thunk;
   comment: (message: string) => Thunk;
-  test: (testName: string) => (baseThunk: Thunk, tapper: (value: any) => any) => Thunk;
+  test: (testName: string) => (baseThunk: Thunk, tapper?: (value: any) => any) => Thunk;
+  log: (message: string) => (baseThunk?: Thunk) => Thunk;
 };
 ```
 
@@ -293,6 +294,10 @@ const withTestFactory
     api.fail = (message, extra) => thunk(() => withLatestTest(test => test.pass(message, extra)))
     api.comment = message => thunk(() => withLatestTest(test => test.pass(message)))
     api.test = api
+    api.log = message => (baseThunk = () => { }) => thunk(() => {
+      const promise = Promise.try(baseThunk)
+      return api(message)(() => promise)().then(() => promise)
+    })
     return f => f(api)
   }
 export default withTestFactory(null)
@@ -350,10 +355,7 @@ export type WithLog = (message: string) => (baseThunk: Thunk) => Thunk
 
 export const withLogFactory
   : (deps: { test: TestAPI }) => WithLog
-  = ({ test }) => message => baseThunk => thunk(() => {
-    const promise = Promise.try(baseThunk)
-    return test(message)(() => promise)().then(() => promise)
-  })
+  = ({ test }) => test.log
 
 export default withTest(test => withLogFactory({ test }))
 ```
@@ -368,7 +370,8 @@ export default withTest(test => withLogFactory({ test }))
 // @flow
 declare class Promise<T> {
   static resolve<T>(value: MaybePromise<T>): Promise<T>;
-  then(handler: () => MaybePromise<T>): Promise<T>;
+  then<U>(handler: () => MaybePromise<U>): Promise<U>;
+  tap(handler: () => MaybePromise): Promise<T>;
   static try<T>(fn: () => MaybePromise<T>): Promise<T>;
   catch(handler: (e: Error) => MaybePromise<T>): Promise<T>;
   finally(handler: () => any): Promise<T>;
