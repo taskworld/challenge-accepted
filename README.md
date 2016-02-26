@@ -304,11 +304,10 @@ const withTestFactory
     api.comment = message => thunk(() => withLatestTest(test => test.pass(message)))
     api.test = api
     api.log = message => (baseThunk = () => { }) => {
-      const sharedThunk = once(() => Promise.try(baseThunk))
-      return script([
-        api(message)(sharedThunk),
-        sharedThunk
-      ])
+      return thunk(() => {
+        const run = once(() => Promise.try(baseThunk))
+        return Promise.resolve(api(message)(run)()).then(run)
+      })
     }
     return f => f(api)
   }
