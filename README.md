@@ -276,6 +276,8 @@ type TestAPI = {
 // @flow
 import Promise from 'bluebird'
 import thunk from './thunk'
+import script from './script'
+import { once } from 'lodash'
 
 export type WithTest<T> = (f: (api: TestAPI) => T) => T
 
@@ -287,17 +289,22 @@ const withTestFactory
     const api = testName => (baseThunk, tapper) => thunk(() => withLatestTest(test =>
       test.test(testName, child => {
         stack.push(child)
-        return Promise.try(baseThunk).tap(tapper || (x => x)).finally(() => stack.pop())
+        return Promise.try(baseThunk).tap(tapper || (x => x)).finally(() => {
+          stack.pop()
+        })
       })
     ))
     api.pass = message => thunk(() => withLatestTest(test => test.pass(message)))
     api.fail = (message, extra) => thunk(() => withLatestTest(test => test.pass(message, extra)))
     api.comment = message => thunk(() => withLatestTest(test => test.pass(message)))
     api.test = api
-    api.log = message => (baseThunk = () => { }) => thunk(() => {
-      const promise = Promise.try(baseThunk)
-      return api(message)(() => promise)().then(() => promise)
-    })
+    api.log = message => (baseThunk = () => { }) => {
+      const sharedThunk = once(() => Promise.try(baseThunk))
+      return script([
+        api(message)(sharedThunk),
+        sharedThunk
+      ])
+    }
     return f => f(api)
   }
 export default withTestFactory(null)
@@ -325,6 +332,16 @@ export default script([
     testDelay(30),
     testDelay(40),
   ])),
+])
+```
+
+```js
+// test/logNest.js
+import testDelay from './_/testDelay'
+import script from '../script'
+import withLog from '../withLog'
+export default script([
+  withLog('one')(withLog('two')(withLog('three')(() => { })))
 ])
 ```
 
