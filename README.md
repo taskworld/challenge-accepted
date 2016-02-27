@@ -1,9 +1,14 @@
 
-# challenge-accepted
+<h1 align="center"><img alt="challenge-accepted" src="http://memesvault.com/wp-content/uploads/Challenge-Accepted-Face-01.jpg" /></h1>
 
-__A composable testing framework__ based on hardcore functional programming and promise thunks.
-Asynchronous is first class citizen (no `async/await`, `.then()`, `yield`, or chained method calls),
-intended for writing acceptance tests. Has very good logging support.
+[![Build Status](https://travis-ci.org/taskworld/challenge-accepted.svg?branch=master)](https://travis-ci.org/taskworld/challenge-accepted)
+[![codecov.io](https://codecov.io/github/taskworld/challenge-accepted/coverage.svg?branch=master)](https://codecov.io/github/taskworld/challenge-accepted/README.md?branch=master)
+
+__A composable and declarative testing framework__ based on hardcore functional programming and promise thunks, with primary focus on human readability.
+Asynchronous is first class citizen (no `async/await`, `.then()`, `yield`, or chained method calls).
+Intended for writing acceptance tests.
+
+The contents of this framework is generated from this README.md file — with [code coverage](https://codecov.io/github/taskworld/challenge-accepted/README.md)!
 
 
 ## Example
