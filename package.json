@@ -16,7 +16,7 @@
   },
   "devDependencies": {
     "babel-cli": "^6.5.1",
-    "babel-plugin-__coverage__": "^0.111.0",
+    "babel-plugin-__coverage__": "^0.1111.0",
     "babel-preset-es2015": "^6.5.0",
     "babel-preset-react": "^6.5.0",
     "bulk-require": "^0.2.1",
