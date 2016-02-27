@@ -44,3 +44,4 @@ node_modules
 /src/
 
 .nyc_output
+/mapping.json
