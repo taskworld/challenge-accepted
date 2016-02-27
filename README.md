@@ -1,5 +1,5 @@
 
-<h1 align="center"><img alt="challenge-accepted" src="http://memesvault.com/wp-content/uploads/Challenge-Accepted-Face-01.jpg" /></h1>
+<h1 align="center"><img alt="challenge-accepted" src="http://i.imgur.com/HtKOr3v.jpg" /></h1>
 
 [![Build Status](https://travis-ci.org/taskworld/challenge-accepted.svg?branch=master)](https://travis-ci.org/taskworld/challenge-accepted)
 [![codecov.io](https://codecov.io/github/taskworld/challenge-accepted/coverage.svg?branch=master)](https://codecov.io/github/taskworld/challenge-accepted/README.md?branch=master)
