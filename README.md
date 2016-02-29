@@ -277,17 +277,15 @@ type TestAPI = {
 ```
 
 ```js
-// withTest.js
+// test.js
 // @flow
 import Promise from 'bluebird'
 import thunk from './thunk'
 import script from './script'
 import { once } from 'lodash'
 
-export type WithTest<T> = (f: (api: TestAPI) => T) => T
-
-const withTestFactory
-  : (rootTest: TapTest | null) => WithTest
+const createTest
+  : (rootTest?: TapTest) => TestAPI
   = root => {
     const stack: Array<TapTest> = [ ]
     const withLatestTest = f => f(stack.length === 0 ? root || require('tap') : stack[stack.length - 1])
@@ -309,10 +307,12 @@ const withTestFactory
         return Promise.resolve(api(message)(run)()).then(run)
       })
     }
-    return f => f(api)
+    return api
   }
-export default withTestFactory(null)
+
+export default createTest()
 ```
+
 
 ### Logging
 
@@ -368,9 +368,9 @@ export default testDelay
 // withLog.js
 // @flow
 import Promise from 'bluebird'
-import withTest from './withTest'
 import script from './script'
 import thunk from './thunk'
+import test from './test'
 
 export type WithLog = (message: string) => (baseThunk: Thunk) => Thunk
 
@@ -378,7 +378,18 @@ export const withLogFactory
   : (deps: { test: TestAPI }) => WithLog
   = ({ test }) => test.log
 
-export default withTest(test => withLogFactory({ test }))
+export default withLogFactory({ test })
+```
+
+
+## Utilities
+
+### `using`
+
+```js
+// using.js
+const using = x => f => f(x)
+export default using
 ```
 
 
@@ -451,7 +462,7 @@ declare module 'bulk-require' {
 'use strict'
 import bulk from 'bulk-require'
 import script from '../script'
-import withTest from '../withTest'
+import test from '../test'
 import thunk from '../thunk'
 import Promise from 'bluebird'
 
@@ -469,11 +480,9 @@ for (const moduleName of Object.keys(modules)) {
   if (moduleExports === module.exports) continue
   const testFunction = moduleExports && (moduleExports.default || moduleExports)
   if (!testFunction) continue
-  tests.push(
-    withTest(test => test(moduleName)(
-      (/\.fail$/.test(moduleName) ? failingTest : passingTest)(testFunction)
-    ))
-  )
+  tests.push(test(moduleName)(
+    (/\.fail$/.test(moduleName) ? failingTest : passingTest)(testFunction)
+  ))
 }
 
 module.exports = script(tests)
